@@ -6,5 +6,6 @@ import (
 
 func main() {
 	//core.UsePool()
-	core.TestForBug()
+	//core.TestForBug()
+	core.DoUnsafeTest()
 }
