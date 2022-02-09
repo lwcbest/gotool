@@ -1,112 +1,70 @@
-package pool
+package jobpool
 
 import (
-	"fmt"
-	"time"
+	"context"
+	"sync"
 )
 
-func NewGoPool(queueMax int, workerCount int) *GoPool {
-	taskQueue := taskQueue{}
-	taskQueue.create(queueMax)
-	slavePool := slavePool{}
-	slavePool.create(workerCount)
-	return &GoPool{taskQueue: taskQueue, slavePool: slavePool}
+type JobFunc func(args ...interface{})
+
+type Job struct {
+	f JobFunc
+	args []interface{}
 }
 
-type GoPool struct {
-	taskQueue taskQueue
-	slavePool slavePool
-	stop      chan struct{}
+type JobPool struct {
+	pool        chan *Job
+	workerCount int
+
+	stopCtx        context.Context
+	stopCancelFunc context.CancelFunc
+	wg             sync.WaitGroup
 }
 
-func (gp *GoPool) AddTask(task func(), wait time.Duration) bool {
-	return gp.taskQueue.addTask(task, wait)
+func (j *Job) Execute() {
+	j.f(j.args...)
 }
 
-func (gp *GoPool) StartRun() {
-	go func() {
-		for {
-			select {
-			case job := <-gp.taskQueue.tasks:
-				slave := <-gp.slavePool.slaves
-				slave.job <- job
-			case <-gp.stop:
-				for i := 0; i < cap(gp.slavePool.slaves); i++ {
-					slave := <-gp.slavePool.slaves
-
-					slave.stop <- struct{}{}
-					<-slave.stop
-				}
-
-				gp.stop <- struct{}{}
-				return
-			}
-		}
-	}()
-}
-
-func (gp *GoPool) Stop() {
-	gp.stop <- struct{}{}
-	<-gp.stop
-}
-
-type taskQueue struct {
-	tasks chan func()
-}
-
-func (tq *taskQueue) create(max int) {
-	tq.tasks = make(chan func(), max)
-}
-
-func (tq *taskQueue) addTask(task func(), wait time.Duration) bool {
-	timeout := make(chan bool, 1)
-	go func() {
-		time.Sleep(wait)
-		timeout <- true
-	}()
-
-	select {
-	case tq.tasks <- task:
-		return true
-	case <-timeout:
-		return false
+func New(workerCount, poolLen int) *JobPool {
+	return &JobPool{
+		workerCount: workerCount,
+		pool:        make(chan *Job, poolLen),
 	}
 }
 
-type slavePool struct {
-	slaves chan *slave
+func (jp *JobPool) PushJob(t *Job) {
+	jp.pool <- t
 }
 
-func (sp *slavePool) create(max int) {
-	sp.slaves = make(chan *slave, max)
-	for i := 0; i < cap(sp.slaves); i++ {
-		sla := slave{parentPool: sp}
-		sla.job = make(chan func())
-		sla.stop = make(chan struct{})
-		sla.start()
+func (jp *JobPool) PushJobFunc(f JobFunc,args ...interface{}) {
+	jp.pool <- &Job{
+		f: f,
+		args:args,
 	}
 }
 
-type slave struct {
-	parentPool *slavePool
-	job        chan func()
-	stop       chan struct{}
+func (jp *JobPool) work() {
+	for {
+		select {
+		case <-jp.stopCtx.Done():
+			jp.wg.Done()
+			return
+		case t := <-jp.pool:
+			t.Execute()
+		}
+	}
 }
 
-func (s *slave) start() {
-	go func() {
-		for {
-			// worker free, add it to pool
-			s.parentPool.slaves <- s
-			select {
-			case job := <-s.job:
-				fmt.Println("do job")
-				job()
+func (jp *JobPool) Start() *JobPool {
+	jp.wg.Add(jp.workerCount)
+	jp.stopCtx, jp.stopCancelFunc = context.WithCancel(context.Background())
+	for i := 0; i < jp.workerCount; i++ {
+		go jp.work()
+	}
+	return jp
+}
 
-			case <-s.stop:
-				s.stop <- struct{}{}
-				return
-			}
-		}
-	}()
+func (jp *JobPool) Stop() {
+	jp.stopCancelFunc()
+	jp.wg.Wait()
 }

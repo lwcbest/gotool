@@ -3,45 +3,66 @@ package core
 import (
 	"bufio"
 	"fmt"
+	"github.com/BurntSushi/toml"
+	"github.com/golang-module/carbon"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 )
 
-func ReqStr(){
-	fmt.Println("请输入问句：")
-	input := bufio.NewScanner(os.Stdin)
-	input.Scan()
+type Config struct {
+	Input InputStruct
+}
 
-	req:=input.Text()
-	fmt.Println("你输入的问句是：", req)
+type InputStruct struct {
+	Req         string
+	TodayString string
+	Count       int
+}
 
-	fmt.Println("请输入日期：")
-	input.Scan()
-	myDate:=input.Text()
-	fmt.Println("你输入的日期是：", myDate)
-	myDates:=strings.Split(myDate,".")
-	year,_:=strconv.ParseInt(myDates[0],10,64)
-	month,_:=strconv.ParseInt(myDates[1],10,64)
-	day,_:=strconv.ParseInt(myDates[2],10,64)
-	loc, _ := time.LoadLocation("Local")
-	today:=time.Date(int(year),time.Month(month),int(day),0,0,0,0,loc)
-	yesterday := today.Add(-24*time.Hour)
-
-	yesterdayWeek:=yesterday.Weekday()
-	if yesterdayWeek==time.Sunday{
-		yesterday = yesterday.Add(-24*time.Hour)
-		yesterday = yesterday.Add(-24*time.Hour)
+func ReqStr() {
+	var conf Config
+	if _, err := toml.DecodeFile("./data.toml", &conf); err != nil {
+		fmt.Printf("fail to read config.||err=%v||config=%v", err, conf)
+		os.Exit(1)
+		return
 	}
 
-	todayStr:=strconv.Itoa(today.Year())+"年"+strconv.Itoa(int(today.Month()))+"月"+strconv.Itoa(today.Day())+"日"
-	yesterdayStr:=strconv.Itoa(yesterday.Year())+"年"+strconv.Itoa(int(yesterday.Month()))+"月"+strconv.Itoa(yesterday.Day())+"日"
-	fmt.Println("今天是：", todayStr)
-	fmt.Println("昨天是：", yesterdayStr)
+	input := bufio.NewScanner(os.Stdin)
+
+	req := conf.Input.Req
+	myDate := conf.Input.TodayString
+	today := carbon.Parse(myDate)
+	if !today.IsWeekday() {
+		fmt.Println("配置日期今日不能是周末....")
+		input.Scan()
+		input.Text()
+		return
+	}
+
+	for i := 0; i < conf.Input.Count; i++ {
+		today = BuildFinalStr(today, req)
+	}
+
+	fmt.Println("输入任何字母进行退出.....")
+	input.Scan()
+	input.Text()
+}
+
+func BuildFinalStr(today carbon.Carbon, req string) carbon.Carbon {
+	yesterday := today.SubDay()
+	if yesterday.IsWeekend() {
+		yesterday = yesterday.SubDay()
+		yesterday = yesterday.SubDay()
+	}
+
+	todayStr := today.ToFormatString("Ymd")
+	yesterdayStr := yesterday.ToFormatString("Ymd")
 
 	str2 := strings.Replace(req, "今日", todayStr, -1)
 	str3 := strings.Replace(str2, "昨日", yesterdayStr, -1)
 
-	fmt.Println("替换后问句是：", str3)
+	fmt.Println(todayStr)
+	fmt.Println(str3)
+	fmt.Println("----------------")
+	return yesterday
 }

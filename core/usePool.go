@@ -2,23 +2,25 @@ package core
 
 import (
 	"fmt"
-	"github.com/lwcbest/gotool/pool"
+	jobpool "github.com/lwcbest/gotool/pool"
+	"strconv"
+	"sync"
 	"time"
 )
 
 func UsePool(){
-	goPool := pool.NewGoPool(2, 1)
-	goPool.StartRun()
-	for i := 0; i < 106; i++ {
-		count := i
-
-		res := goPool.AddTask(func() {
-			fmt.Printf("I am task! Number %d\n")
-		}, 3*time.Second)
-
-		fmt.Printf("I am save! Number %d  %v\n", count, res)
+	wg := sync.WaitGroup{}
+	jp := jobpool.New(3, 50).Start()
+	lenth := 100
+	wg.Add(lenth)
+	for i := 0; i < lenth; i++ {
+		fmt.Println("push"+ " "+strconv.Itoa(i))
+		jp.PushJobFunc(func(args ...interface{}) {
+			defer wg.Done()
+			time.Sleep(1*time.Second)
+			fmt.Print(args[0].(int), " ")
+		}, i)
 	}
 
-	// dummy wait until jobs are finished
-	time.Sleep(1000 * time.Second)
+	wg.Wait()
 }
