@@ -3,7 +3,7 @@ package main
 import "github.com/lwcbest/gotool/core"
 
 func main() {
-	core.UsePool()
+	//core.UsePool()
 	//core.TestForBug()
 	//core.DoUnsafeTest()
 	//core.DoImage()
@@ -11,4 +11,6 @@ func main() {
 	//core.TestDataRaceByAtomic()
 	//core.ReqStr()
 	//core.TestForIota()
+	//core.DoPP()
+	core.StartServ()
 }
