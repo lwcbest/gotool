@@ -12,5 +12,6 @@ func main() {
 	//core.ReqStr()
 	//core.TestForIota()
 	//core.DoPP()
-	core.StartServ()
+	//core.StartServ()
+	core.StartReqStrServ()
 }
