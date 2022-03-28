@@ -10,7 +10,13 @@ import (
 func ComputeScore(row map[string]interface{}) int {
 	now := time.Now()
 	todayStr := now.Format("20060102")
-	yesterStr := now.AddDate(0, 0, -1).Format("20060102")
+	var yesterStr string
+	if now.Weekday() == time.Monday {
+		yesterStr = now.AddDate(0, 0, -3).Format("20060102")
+	} else {
+		yesterStr = now.AddDate(0, 0, -1).Format("20060102")
+	}
+
 	code := row["code"]
 
 	v_huanshou, ok := row["竞价实际换手率"+"["+todayStr+"]"]
