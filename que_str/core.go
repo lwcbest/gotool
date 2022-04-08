@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"reflect"
@@ -17,8 +16,18 @@ type Config struct {
 }
 
 type InputStruct struct {
-	Cookie string     `toml:"Cookie"`
-	Reqs   []ReqQuery `toml:"reqs"`
+	Cookie      string      `toml:"Cookie"`
+	Reqs        []ReqQuery  `toml:"reqs"`
+	ComputeData ComputeData `toml:"computedata"`
+}
+
+type ComputeData struct {
+	Huanshou    [][]float64 `toml:"huanshou"`
+	Liangbi     [][]float64 `toml:"liangbi"`
+	Jingzhanzuo [][]float64 `toml:"jingzhanzuo"`
+	Weipipei    [][]float64 `toml:"weipipei"`
+	Jingjiajine [][]float64 `toml:"jingjiajine"`
+	Zhuli       [][]float64 `toml:"zhuli"`
 }
 
 type ReqQuery struct {
@@ -65,7 +74,7 @@ func ReqStr() string {
 		return ""
 	}
 
-	result := "<head>\n<title>新魔盒1.0</title>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n \n<style type=\"text/css\">\nhtml {\n    font-family: sans-serif;\n    -ms-text-size-adjust: 100%;\n    -webkit-text-size-adjust: 100%;\n}\n \nbody {\n    margin: 10px;\n}\ntable {\n    border-collapse: collapse;\n    border-spacing: 0;\n}\n \ntd,th {\n    padding: 0;\n}\n \n.pure-table {\n    border-collapse: collapse;\n    border-spacing: 0;\n    empty-cells: show;\n    border: 1px solid #cbcbcb;\n}\n \n.pure-table caption {\n    color: #000;\n    font: italic 85%/1 arial,sans-serif;\n    padding: 1em 0;\n    text-align: center;\n}\n \n.pure-table td,.pure-table th {\n    border-left: 1px solid #cbcbcb;\n    border-width: 0 0 0 1px;\n    font-size: inherit;\n    margin: 0;\n    overflow: visible;\n    padding: .5em 1em;\n}\n \n.pure-table thead {\n    background-color: #e0e0e0;\n    color: #000;\n    text-align: left;\n    vertical-align: bottom;\n}\n \n.pure-table td {\n    background-color: transparent;\n}\n \n.pure-table-odd td {\n    background-color: #f2f2f2;\n}\n</style>\n</head>"
+	result := "<head>\n<title>新魔盒1.8</title>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n \n<style type=\"text/css\">\nhtml {\n    font-family: sans-serif;\n    -ms-text-size-adjust: 100%;\n    -webkit-text-size-adjust: 100%;\n}\n \nbody {\n    margin: 10px;\n}\ntable {\n    border-collapse: collapse;\n    border-spacing: 0;\n}\n \ntd,th {\n    padding: 0;\n}\n \n.pure-table {\n    border-collapse: collapse;\n    border-spacing: 0;\n    empty-cells: show;\n    border: 1px solid #cbcbcb;\n}\n \n.pure-table caption {\n    color: #000;\n    font: italic 85%/1 arial,sans-serif;\n    padding: 1em 0;\n    text-align: center;\n}\n \n.pure-table td,.pure-table th {\n    border-left: 1px solid #cbcbcb;\n    border-width: 0 0 0 1px;\n    font-size: inherit;\n    margin: 0;\n    overflow: visible;\n    padding: .5em 1em;\n}\n \n.pure-table thead {\n    background-color: #e0e0e0;\n    color: #000;\n    text-align: left;\n    vertical-align: bottom;\n}\n \n.pure-table td {\n    background-color: transparent;\n}\n \n.pure-table-odd td {\n    background-color: #f2f2f2;\n}\n</style>\n</head>"
 	for _, reqQuery := range conf.Input.Reqs {
 		result += httpDo(conf, reqQuery)
 	}
@@ -115,10 +124,10 @@ func httpDo(conf Config, reqQuery ReqQuery) string {
 	if err != nil {
 		return "更新配置文件"
 	}
-	log.Println(string(body))
+
 	if resData.StatusCode == 0 {
 		finalDatas := resData.Data.Answer[0].Txt[0].Content.Components[0].Data.Datas
-		return BuildTable(reqQuery.Name, finalDatas)
+		return BuildTable(reqQuery.Name, finalDatas, conf.Input.ComputeData)
 		//return JSONStr(finalDatas)
 	}
 

@@ -1,199 +1,183 @@
 package que_str
 
 import (
-	"fmt"
-	"math"
-	"strconv"
-	"time"
+	"sort"
 )
 
-func ComputeScore(row map[string]interface{}) int {
-	now := time.Now()
-	todayStr := now.Format("20060102")
-	var yesterStr string
-	if now.Weekday() == time.Monday {
-		yesterStr = now.AddDate(0, 0, -3).Format("20060102")
-	} else {
-		yesterStr = now.AddDate(0, 0, -1).Format("20060102")
+func ComputePiaos(piaos []*Piao, computeData ComputeData) []*Piao {
+	huanshou := computeData.Huanshou
+	liangbi := computeData.Liangbi
+	jingzhanzuo := computeData.Jingzhanzuo
+	weipipei := computeData.Weipipei
+	jingjiajine := computeData.Jingjiajine
+	zhuli := computeData.Zhuli
+
+	for _, piao := range piaos {
+		for _, query := range huanshou {
+			if piao.Huanshou >= query[0] && piao.Huanshou < query[1] {
+				piao.HuanshouScore = query[2]
+				break
+			}
+		}
+
+		for _, query := range liangbi {
+			if piao.Liangbi >= query[0] && piao.Liangbi < query[1] {
+				piao.LiangbiScore = query[2]
+				break
+			}
+		}
+
+		for _, query := range jingzhanzuo {
+			if piao.Jingzhanzuo >= query[0] && piao.Jingzhanzuo < query[1] {
+				piao.JingzhanzuoScore = query[2]
+				break
+			}
+		}
+
+		for _, query := range weipipei {
+			value := piao.Weipipei / piao.Jingjiajine
+			if value >= query[0] && value < query[1] {
+				piao.WeipipeiScore = query[2]
+				break
+			}
+		}
+
+		for _, query := range jingjiajine {
+			if piao.Jingjiajine >= query[0]*10000 && piao.Jingjiajine < query[1]*10000 {
+				piao.JingjiajineScore = query[2]
+				break
+			}
+		}
+
+		for _, query := range zhuli {
+			if piao.Zhulizengcang >= query[0] && piao.Zhulizengcang < query[1] {
+				piao.ZhulizengcangScore = query[2]
+				break
+			}
+		}
 	}
 
-	code := row["code"]
-
-	v_huanshou, ok := row["竞价实际换手率"+"["+todayStr+"]"]
-	if !ok {
-		fmt.Println("没有key!" + "竞价实际换手率" + "[" + todayStr + "]")
-		return -999
-	}
-	v_jingjiajine, ok := row["竞价金额"+"["+todayStr+"]"]
-	if !ok {
-		fmt.Println("没有key!" + "竞价金额" + "[" + todayStr + "]")
-		return -999
-	}
-	v_jiban, ok := row["连续涨停天数"+"["+yesterStr+"]"]
-	if !ok {
-		fmt.Println("没有key!" + "连续涨停天数" + "[" + yesterStr + "]")
-		return -999
-	}
-	v_jingjiaweipipeijine, ok := row["竞价未匹配金额"+"["+todayStr+"]"]
-	if !ok {
-		fmt.Println("没有key!" + "竞价未匹配金额" + "[" + todayStr + "]")
-		return -999
-	}
-	v_fenshiliangbi, ok := row["分时量比"+"["+todayStr+" 09:25"+"]"]
-	if !ok {
-		fmt.Println("没有key!" + "分时量比" + "[" + todayStr + " 09:25" + "]")
-		return -999
+	//total
+	ones := make([]*One, 0)
+	for _, piao := range piaos {
+		stu := &One{piao.Code, piao.GetTotalScore()}
+		ones = append(ones, stu)
 	}
 
-	v_jingzhanzuo, ok := row["竞价金额占昨日成交额"+"["+todayStr+"]"]
-	if !ok {
-		fmt.Println("没有key!" + "竞价金额占昨日成交额" + "[" + todayStr + "]")
-		return -999
+	finalPiaos := make([]*Piao, 0)
+	sort.Stable(OneList(ones))
+	for _, one := range ones {
+		for _, piao := range piaos {
+			if one.Name == piao.Code {
+				finalPiaos = append(finalPiaos, piao)
+				break
+			}
+		}
 	}
 
-	v_zhangfu, ok := row["分时涨跌幅:前复权"+"["+todayStr+" 09:25"+"]"]
-	if !ok {
-		fmt.Println("没有key!" + "分时涨跌幅:前复权" + "[" + todayStr + " 09:25" + "]")
-		return -999
-	}
-
-	score := 0
-	huanshouScore := computeHuanshou(v_huanshou.(float64))
-	jingjiajineScore := computeJine(v_jingjiajine.(float64))
-	jibanScore := computeJiban(v_jiban.(float64))
-	weipipeiScore := computeWeipipei(v_jingjiaweipipeijine.(float64), v_jingjiajine.(float64))
-
-	v_fenshiliangbiStr := v_fenshiliangbi.(string)
-	v_fenshiliangbifloat, _ := strconv.ParseFloat(v_fenshiliangbiStr, 64)
-	liangbiScore := computeLiangbi(v_fenshiliangbifloat)
-
-	jingzhanzuoScore := computeJingzhanzuo(v_jingzhanzuo.(float64))
-
-	v_zhangfuStr := v_zhangfu.(string)
-	v_zhangfufloat, _ := strconv.ParseFloat(v_zhangfuStr, 64)
-	zhangfuScore := computeZhangfu(v_zhangfufloat)
-
-	score = huanshouScore + jingjiajineScore + jibanScore + weipipeiScore + liangbiScore + jingzhanzuoScore + zhangfuScore
-	fmt.Printf("%v得分%v,换手%v,竞价金额%v,几板%v,未匹配%v,量比%v,竞占昨%v,涨幅%v \n", code, score, huanshouScore, jingjiajineScore, jibanScore, weipipeiScore, liangbiScore, jingzhanzuoScore, zhangfuScore)
-	return score
+	return finalPiaos
 }
 
-func computeHuanshou(v_huanshou float64) int {
-	if v_huanshou >= 1 {
-		return 2
+func ComputePiaos2(piaos []*Piao) {
+	//huanshou
+	ones := make([]*One, 0)
+	for _, piao := range piaos {
+		stu := &One{piao.Code, piao.Huanshou}
+		ones = append(ones, stu)
 	}
 
-	if v_huanshou >= 0.8 && v_huanshou < 1 {
-		return -2
+	sort.Stable(OneList(ones))
+	for i, one := range ones {
+		for _, piao := range piaos {
+			if one.Name == piao.Code {
+				piao.HuanshouScore2 = float64(i) + 1
+				break
+			}
+		}
 	}
 
-	if v_huanshou >= 0.6 && v_huanshou < 0.8 {
-		return -4
+	//liangbi
+	ones = make([]*One, 0)
+	for _, piao := range piaos {
+		stu := &One{piao.Code, piao.Liangbi}
+		ones = append(ones, stu)
 	}
 
-	if v_huanshou < 0.6 {
-		return -6
+	sort.Stable(OneList(ones))
+	for i, one := range ones {
+		for _, piao := range piaos {
+			if one.Name == piao.Code {
+				piao.LiangbiScore2 = float64(i) + 1
+				break
+			}
+		}
 	}
 
-	return 0
+	//jingzhanzuo
+	ones = make([]*One, 0)
+	for _, piao := range piaos {
+		stu := &One{piao.Code, piao.Jingzhanzuo}
+		ones = append(ones, stu)
+	}
+
+	sort.Stable(OneList(ones))
+	for i, one := range ones {
+		for _, piao := range piaos {
+			if one.Name == piao.Code {
+				piao.JingzhanzuoScore2 = float64(i) + 1
+				break
+			}
+		}
+	}
+
+	//weipipei
+	ones = make([]*One, 0)
+	for _, piao := range piaos {
+		stu := &One{piao.Code, piao.Weipipei / piao.Jingjiajine}
+		ones = append(ones, stu)
+	}
+
+	sort.Stable(OneList(ones))
+	for i, one := range ones {
+		for _, piao := range piaos {
+			if one.Name == piao.Code {
+				piao.WeipipeiScore2 = float64(i) + 1
+				break
+			}
+		}
+	}
+
+	//zhulizengcang
+	ones = make([]*One, 0)
+	for _, piao := range piaos {
+		stu := &One{piao.Code, piao.Zhulizengcang}
+		ones = append(ones, stu)
+	}
+
+	sort.Stable(OneList(ones))
+	for i, one := range ones {
+		for _, piao := range piaos {
+			if one.Name == piao.Code {
+				piao.ZhulizengcangScore2 = float64(i) + 1
+				break
+			}
+		}
+	}
 }
 
-func computeJine(v_jingjiajine float64) int {
-	score := 0
-	w := 10000.0
-	if v_jingjiajine < 900.0*w {
-		return score - 2
-	}
-
-	if v_jingjiajine > 1000*w {
-		left := v_jingjiajine - 1000*w
-		down := 500 * w
-		temp := math.Floor(left / down)
-		score += int(temp)
-	}
-
-	return score
+type One struct {
+	Name string
+	Num  float64
 }
 
-func computeJiban(v_jiban float64) int {
-	if v_jiban == 0 {
-		return 0
-	} else {
-		score := -1
-		return score - int(v_jiban)
-	}
+type OneList []*One
+
+func (this OneList) Len() int {
+	return len(this)
 }
-
-func computeWeipipei(v_weipipei float64, v_jingjiajine float64) int {
-	w := 10000.0
-	if v_weipipei > 0 {
-		return 2
-	}
-
-	if v_weipipei > -1*w && v_weipipei < 0 {
-		return 0
-	}
-
-	v_weipipei_abs := math.Abs(v_weipipei)
-	bi := v_weipipei_abs / v_jingjiajine
-	if bi < 0.05 {
-		return -1
-	}
-
-	if bi >= 0.05 && bi < 0.1 {
-		return -2
-	}
-
-	if bi >= 0.1 && bi < 0.15 {
-		return -3
-	}
-
-	if bi >= 0.15 && bi < 0.2 {
-		return -4
-	}
-	if bi >= 0.2 {
-		return -5
-	}
-
-	return 0
+func (this OneList) Less(i, j int) bool {
+	return this[i].Num > this[j].Num
 }
-
-func computeLiangbi(v_liangbi float64) int {
-	if v_liangbi < 9 {
-		return -2
-	}
-
-	if v_liangbi >= 60 && v_liangbi < 80 {
-		return -2
-	}
-
-	if v_liangbi > 80 {
-		return -4
-	}
-
-	return 0
-}
-
-func computeJingzhanzuo(v_jingzhanzuo float64) int {
-	if v_jingzhanzuo < 0.03 {
-		return -2
-	}
-
-	return 0
-}
-
-func computeZhangfu(v_zhangfu float64) int {
-	if v_zhangfu < 0.02 {
-		return 0
-	}
-
-	if v_zhangfu >= 0.02 && v_zhangfu < 0.04 {
-		return 2
-	}
-
-	if v_zhangfu >= 0.04 && v_zhangfu < 0.06 {
-		return 3
-	}
-
-	return 0
+func (this OneList) Swap(i, j int) {
+	this[i], this[j] = this[j], this[i]
 }

@@ -2,50 +2,55 @@ package que_str
 
 import (
 	"fmt"
-	"strconv"
 )
 
-func BuildTable(name string, dataResource []map[string]interface{}) string {
+func BuildTable(name string, dataResource []map[string]interface{}, data ComputeData) string {
+	piaos := BuildPiaos(dataResource)
+	piaos = ComputePiaos(piaos, data)
+	ComputePiaos2(piaos)
 	tableStr := "<body><p>" + name + "</p><table class=\"pure-table\">"
 
 	if len(dataResource) > 0 {
-		keys := BuildKey(dataResource[0])
+		disPlayKeys := GetDisplayKeys()
 
 		//表头
 		tableStr += " <thead><tr>"
-		tableStr += "<td>" + "得分" + "</td>"
-		for _, key := range keys {
+		tableStr += "<td>" + "chang得分" + "</td>"
+		tableStr += "<td>" + "fan得分" + "</td>"
+		for _, disKey := range disPlayKeys {
 			tableStr += "<td>"
-			tableStr += key
+			tableStr += disKey
 			tableStr += "</td>"
 		}
 		tableStr += "</tr></thead>"
 
 		//第三行以后
-		for index, item := range dataResource {
-			if index%2 == 0 {
+		for i := len(piaos); i > 0; i-- {
+			piao := piaos[i-1]
+			if i%2 == 0 {
 				tableStr += "<tr class=\"pure-table-odd\">"
 			} else {
 				tableStr += "<tr>"
 			}
 
 			//计算得分
-			score := ComputeScore(item)
-			tableStr += "<td>" + strconv.Itoa(score) + "</td>"
-
-			for _, key := range keys {
-				value := item[key]
-				tableStr += "<td>"
-				_, ok := value.(float64)
-				if ok {
-					tableStr += fmt.Sprintf("%.2f", value)
-				} else {
-					tableStr += fmt.Sprintf("%v", value)
-				}
-				tableStr += "</td>"
-			}
+			tableStr += "<td>" + fmt.Sprintf("%v+%v+%v+%v+%v+%v=%v", piao.HuanshouScore, piao.LiangbiScore, piao.JingzhanzuoScore, piao.WeipipeiScore, piao.ZhulizengcangScore, piao.JingjiajineScore, piao.GetTotalScore()) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%v+%v+%v=%v", piao.HuanshouScore2, piao.LiangbiScore2, piao.JingzhanzuoScore2, piao.GetTotalScore2()) + "</td>"
+			tableStr += "<td>" + piao.Code + "</td>"
+			tableStr += "<td>" + piao.Gupiaojiancheng + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Zuixinzhangdiefu) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Huanshou) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Liangbi) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Jingzhanzuo) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f 万", piao.Weipipei/10000) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f 万", piao.Jingjiajine/10000) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Zhulizengcang) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Zhangfu) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Weibi) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Jiban) + "</td>"
 			tableStr += "</tr>"
 		}
+
 	} else {
 		tableStr += "<tr><td>" + "无数据" + "</td></tr>"
 	}
@@ -55,14 +60,14 @@ func BuildTable(name string, dataResource []map[string]interface{}) string {
 	return tableStr
 }
 
-func BuildKey(row map[string]interface{}) []string {
-	keys := make([]string, 0)
-	keys = append(keys, "code", "股票简称")
-	for key, _ := range row {
-		if key != "code" && key != "股票简称" {
-			keys = append(keys, key)
-		}
+func BuildPiaos(dataResource []map[string]interface{}) []*Piao {
+	fmt.Println("%+v", dataResource)
+	piaos := make([]*Piao, 0)
+	for _, item := range dataResource {
+		piao := &Piao{}
+		piao.Input(item)
+		piaos = append(piaos, piao)
 	}
 
-	return keys
+	return piaos
 }

@@ -18,7 +18,7 @@ func (server httpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func StartReqStrServ() {
 	var server httpServer
-	http.Handle("/", server)
-	log.Println("http://localhost:8123/")
+	http.Handle("/mohe", server)
+	log.Println("http://localhost:8123/mohe")
 	log.Fatal(http.ListenAndServe(":8123", nil))
 }
