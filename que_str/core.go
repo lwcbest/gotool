@@ -1,12 +1,15 @@
 package que_str
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/BurntSushi/toml"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"reflect"
 	"strings"
 )
@@ -75,6 +78,7 @@ func ReqStr() string {
 	}
 
 	result := "<head>\n<title>新魔盒1.8</title>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n \n<style type=\"text/css\">\nhtml {\n    font-family: sans-serif;\n    -ms-text-size-adjust: 100%;\n    -webkit-text-size-adjust: 100%;\n}\n \nbody {\n    margin: 10px;\n}\ntable {\n    border-collapse: collapse;\n    border-spacing: 0;\n}\n \ntd,th {\n    padding: 0;\n}\n \n.pure-table {\n    border-collapse: collapse;\n    border-spacing: 0;\n    empty-cells: show;\n    border: 1px solid #cbcbcb;\n}\n \n.pure-table caption {\n    color: #000;\n    font: italic 85%/1 arial,sans-serif;\n    padding: 1em 0;\n    text-align: center;\n}\n \n.pure-table td,.pure-table th {\n    border-left: 1px solid #cbcbcb;\n    border-width: 0 0 0 1px;\n    font-size: inherit;\n    margin: 0;\n    overflow: visible;\n    padding: .5em 1em;\n}\n \n.pure-table thead {\n    background-color: #e0e0e0;\n    color: #000;\n    text-align: left;\n    vertical-align: bottom;\n}\n \n.pure-table td {\n    background-color: transparent;\n}\n \n.pure-table-odd td {\n    background-color: #f2f2f2;\n}\n</style>\n</head>"
+	conf.Input.Cookie = conf.Input.Cookie + "v=" + getV()
 	for _, reqQuery := range conf.Input.Reqs {
 		result += httpDo(conf, reqQuery)
 	}
@@ -101,6 +105,7 @@ func httpDo(conf Config, reqQuery ReqQuery) string {
 	req, err := http.NewRequest("POST", "http://www.iwencai.com/customized/chart/get-robot-data", strings.NewReader(JSONStr(reqData)))
 	if err != nil {
 		// handle error
+		fmt.Println(err.Error())
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -111,6 +116,10 @@ func httpDo(conf Config, reqQuery ReqQuery) string {
 	req.Header.Set("Cookie", conf.Input.Cookie)
 
 	resp, err := client.Do(req)
+	if err != nil {
+		// handle error
+		fmt.Println(err.Error())
+	}
 
 	defer resp.Body.Close()
 
@@ -153,4 +162,19 @@ func JSONStr(v interface{}) string {
 
 func DecodeJSON(str string, v interface{}) error {
 	return json.Unmarshal([]byte(str), v)
+}
+
+func getV() string {
+	cmd := exec.Command("node", "./usejs/abc.js")
+	//cmd.Stdin = strings.NewReader("some input")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	v := out.String()
+	v = v[:len(v)-1]
+	return v
 }

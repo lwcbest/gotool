@@ -16,7 +16,8 @@ func BuildTable(name string, dataResource []map[string]interface{}, data Compute
 		//表头
 		tableStr += " <thead><tr>"
 		tableStr += "<td>" + "chang得分" + "</td>"
-		tableStr += "<td>" + "fan得分" + "</td>"
+		//注释fan得分
+		//tableStr += "<td>" + "fan得分" + "</td>"
 		for _, disKey := range disPlayKeys {
 			tableStr += "<td>"
 			tableStr += disKey
@@ -35,16 +36,18 @@ func BuildTable(name string, dataResource []map[string]interface{}, data Compute
 
 			//计算得分
 			tableStr += "<td>" + fmt.Sprintf("%v+%v+%v+%v+%v+%v=%v", piao.HuanshouScore, piao.LiangbiScore, piao.JingzhanzuoScore, piao.WeipipeiScore, piao.ZhulizengcangScore, piao.JingjiajineScore, piao.GetTotalScore()) + "</td>"
-			tableStr += "<td>" + fmt.Sprintf("%v+%v+%v=%v", piao.HuanshouScore2, piao.LiangbiScore2, piao.JingzhanzuoScore2, piao.GetTotalScore2()) + "</td>"
+			//注释fan得分
+			//tableStr += "<td>" + fmt.Sprintf("%v+%v+%v=%v", piao.HuanshouScore2, piao.LiangbiScore2, piao.JingzhanzuoScore2, piao.GetTotalScore2()) + "</td>"
 			tableStr += "<td>" + piao.Code + "</td>"
 			tableStr += "<td>" + piao.Gupiaojiancheng + "</td>"
 			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Zuixinzhangdiefu) + "</td>"
-			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Huanshou) + "</td>"
-			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Liangbi) + "</td>"
-			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Jingzhanzuo) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f (%v)", piao.Huanshou, piao.HuanshouScore) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f (%v)", piao.Liangbi, piao.LiangbiScore) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f (%v)", piao.Jingzhanzuo, piao.JingzhanzuoScore) + "</td>"
 			tableStr += "<td>" + fmt.Sprintf("%.2f 万", piao.Weipipei/10000) + "</td>"
-			tableStr += "<td>" + fmt.Sprintf("%.2f 万", piao.Jingjiajine/10000) + "</td>"
-			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Zhulizengcang) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f 万 (%v)", piao.Jingjiajine/10000, piao.JingjiajineScore) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f (%v)", piao.Weipipei/piao.Jingjiajine, piao.WeipipeiScore) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%.2f (%v)", piao.Zhulizengcang, piao.ZhulizengcangScore) + "</td>"
 			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Zhangfu) + "</td>"
 			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Weibi) + "</td>"
 			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Jiban) + "</td>"
