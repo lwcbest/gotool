@@ -33,7 +33,7 @@ func GetKeyName(key string) string {
 }
 
 func GetDisplayKeys() []string {
-	return []string{"code", "股票简称", "最新涨跌幅", "换手", "量比", "竞占昨", "未匹配", "竞价金额", "未匹配占比", "主力增仓", "涨幅", "委比", "几板"}
+	return []string{"code", "name", "latest", "huanshou", "liangbi", "jingzhanzuo", "weipipei", "jingjiajine", "weipipeizhanbi", "zhulizengcang", "zhangfu", "weibi", "jiban"}
 }
 
 func GetKeys() []string {
