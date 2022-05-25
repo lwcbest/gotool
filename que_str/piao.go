@@ -22,15 +22,8 @@ type Piao struct {
 	WeipipeiScore      float64
 	JingjiajineScore   float64
 	ZhulizengcangScore float64
+	ZhangfuScore       float64
 	TotalScore         float64
-
-	HuanshouScore2      float64
-	LiangbiScore2       float64
-	JingzhanzuoScore2   float64
-	WeipipeiScore2      float64
-	JingjiajineScore2   float64
-	ZhulizengcangScore2 float64
-	TotalScore2         float64
 }
 
 func (p *Piao) Input(row map[string]interface{}) {
@@ -59,16 +52,8 @@ func (p *Piao) Input(row map[string]interface{}) {
 
 func (p *Piao) GetTotalScore() float64 {
 	if p.TotalScore == 0 {
-		p.TotalScore = p.HuanshouScore + p.LiangbiScore + p.JingzhanzuoScore + p.WeipipeiScore + p.ZhulizengcangScore + p.JingjiajineScore
+		p.TotalScore = p.HuanshouScore + p.LiangbiScore + p.JingzhanzuoScore + p.WeipipeiScore + p.ZhulizengcangScore + p.JingjiajineScore + p.ZhangfuScore
 	}
 
 	return p.TotalScore
-}
-
-func (p *Piao) GetTotalScore2() float64 {
-	if p.TotalScore2 == 0 {
-		p.TotalScore2 = p.HuanshouScore2 + p.LiangbiScore2 + p.JingzhanzuoScore2 + p.WeipipeiScore2
-	}
-
-	return p.TotalScore2
 }

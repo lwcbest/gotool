@@ -5,6 +5,7 @@ import (
 )
 
 func main() {
+	//core.TestDelMap()
 	//core.UsePool()
 	//core.TestForBug()
 	//core.DoUnsafeTest()
@@ -17,5 +18,4 @@ func main() {
 	//core.StartServ()
 	core.StartReqStrServ()
 	//core.UseExcel()
-
 }

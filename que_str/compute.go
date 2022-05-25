@@ -11,6 +11,7 @@ func ComputePiaos(piaos []*Piao, computeData ComputeData) []*Piao {
 	weipipei := computeData.Weipipei
 	jingjiajine := computeData.Jingjiajine
 	zhuli := computeData.Zhuli
+	zhangfu := computeData.Zhangfu
 
 	for _, piao := range piaos {
 		for _, query := range huanshou {
@@ -55,6 +56,13 @@ func ComputePiaos(piaos []*Piao, computeData ComputeData) []*Piao {
 				break
 			}
 		}
+
+		for _, query := range zhangfu {
+			if piao.Zhangfu >= query[0] && piao.Zhangfu < query[1] {
+				piao.ZhangfuScore = query[2]
+				break
+			}
+		}
 	}
 
 	//total
@@ -76,93 +84,6 @@ func ComputePiaos(piaos []*Piao, computeData ComputeData) []*Piao {
 	}
 
 	return finalPiaos
-}
-
-func ComputePiaos2(piaos []*Piao) {
-	//huanshou
-	ones := make([]*One, 0)
-	for _, piao := range piaos {
-		stu := &One{piao.Code, piao.Huanshou}
-		ones = append(ones, stu)
-	}
-
-	sort.Stable(OneList(ones))
-	for i, one := range ones {
-		for _, piao := range piaos {
-			if one.Name == piao.Code {
-				piao.HuanshouScore2 = float64(i) + 1
-				break
-			}
-		}
-	}
-
-	//liangbi
-	ones = make([]*One, 0)
-	for _, piao := range piaos {
-		stu := &One{piao.Code, piao.Liangbi}
-		ones = append(ones, stu)
-	}
-
-	sort.Stable(OneList(ones))
-	for i, one := range ones {
-		for _, piao := range piaos {
-			if one.Name == piao.Code {
-				piao.LiangbiScore2 = float64(i) + 1
-				break
-			}
-		}
-	}
-
-	//jingzhanzuo
-	ones = make([]*One, 0)
-	for _, piao := range piaos {
-		stu := &One{piao.Code, piao.Jingzhanzuo}
-		ones = append(ones, stu)
-	}
-
-	sort.Stable(OneList(ones))
-	for i, one := range ones {
-		for _, piao := range piaos {
-			if one.Name == piao.Code {
-				piao.JingzhanzuoScore2 = float64(i) + 1
-				break
-			}
-		}
-	}
-
-	//weipipei
-	ones = make([]*One, 0)
-	for _, piao := range piaos {
-		stu := &One{piao.Code, piao.Weipipei / piao.Jingjiajine}
-		ones = append(ones, stu)
-	}
-
-	sort.Stable(OneList(ones))
-	for i, one := range ones {
-		for _, piao := range piaos {
-			if one.Name == piao.Code {
-				piao.WeipipeiScore2 = float64(i) + 1
-				break
-			}
-		}
-	}
-
-	//zhulizengcang
-	ones = make([]*One, 0)
-	for _, piao := range piaos {
-		stu := &One{piao.Code, piao.Zhulizengcang}
-		ones = append(ones, stu)
-	}
-
-	sort.Stable(OneList(ones))
-	for i, one := range ones {
-		for _, piao := range piaos {
-			if one.Name == piao.Code {
-				piao.ZhulizengcangScore2 = float64(i) + 1
-				break
-			}
-		}
-	}
 }
 
 type One struct {

@@ -32,6 +32,7 @@ type ComputeData struct {
 	Weipipei    [][]float64 `toml:"weipipei"`
 	Jingjiajine [][]float64 `toml:"jingjiajine"`
 	Zhuli       [][]float64 `toml:"zhuli"`
+	Zhangfu     [][]float64 `toml:"zhangfu"`
 }
 
 type ReqQuery struct {
