@@ -16,6 +16,6 @@ func main() {
 	//core.TestForIota()
 	//core.DoPP()
 	//core.StartServ()
-	core.StartReqStrServ()
 	//core.UseExcel()
+	core.StartReqStrServ()
 }

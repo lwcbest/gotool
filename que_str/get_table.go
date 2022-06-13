@@ -3,6 +3,7 @@ package que_str
 import (
 	"fmt"
 	"github.com/lwcbest/gotool/useexcel"
+	"strconv"
 	"time"
 )
 
@@ -36,8 +37,13 @@ func BuildTable(name string, dataResource []map[string]interface{}, data Compute
 
 			//计算得分
 			tableStr += "<td>" + fmt.Sprintf("%v+%v+%v+%v+%v+%v+%v=%v", piao.HuanshouScore, piao.LiangbiScore, piao.JingzhanzuoScore, piao.WeipipeiScore, piao.ZhulizengcangScore, piao.JingjiajineScore, piao.ZhangfuScore, piao.GetTotalScore()) + "</td>"
+			myTime, _ := strconv.Atoi(piao.Shijian[1:3])
 			if piao.TotalScore >= 60 {
-				tableStr += "<td><font color=\"red\">" + piao.Code + "</font></td>"
+				if myTime < 11 {
+					tableStr += "<td><font color=\"red\">" + piao.Code + "</font></td>"
+				} else {
+					tableStr += "<td><font color=\"green\">" + piao.Code + "</font></td>"
+				}
 			} else {
 				tableStr += "<td>" + piao.Code + "</td>"
 			}
@@ -53,6 +59,7 @@ func BuildTable(name string, dataResource []map[string]interface{}, data Compute
 			tableStr += "<td>" + fmt.Sprintf("%.2f (%v)", piao.Zhangfu, piao.ZhangfuScore) + "</td>"
 			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Weibi) + "</td>"
 			tableStr += "<td>" + fmt.Sprintf("%.2f", piao.Jiban) + "</td>"
+			tableStr += "<td>" + fmt.Sprintf("%v", piao.Shijian) + "</td>"
 			tableStr += "</tr>"
 		}
 
@@ -79,6 +86,7 @@ func BuildPiaos(dataResource []map[string]interface{}) []*Piao {
 
 func SaveTable(filename string, dataResource []map[string]interface{}) error {
 	piaos := BuildPiaos(dataResource)
+	fmt.Println(len(piaos))
 	sheet := useexcel.ReadExcelSheet(filename, 0)
 	for _, piao := range piaos {
 		row := sheet.AddRow()
@@ -100,6 +108,10 @@ func SaveTable(filename string, dataResource []map[string]interface{}) error {
 		cell.SetFloat(piao.Weipipei / 10000)
 		cell = row.AddCell()
 		cell.SetFloat(piao.Jingjiajine / 10000)
+		cell = row.AddCell()
+		cell.SetFloat(piao.Weipipei / piao.Jingjiajine)
+		cell = row.AddCell()
+		cell.SetString(piao.Shijian)
 	}
 
 	now := time.Now()

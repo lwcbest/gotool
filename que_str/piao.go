@@ -15,6 +15,7 @@ type Piao struct {
 	Zhangfu          float64
 	Weibi            float64
 	Jiban            float64
+	Shijian          string
 
 	HuanshouScore      float64
 	LiangbiScore       float64
@@ -47,6 +48,9 @@ func (p *Piao) Input(row map[string]interface{}) {
 	}
 	if row[GetKeyName("几板")] != nil {
 		p.Jiban = row[GetKeyName("几板")].(float64)
+	}
+	if row[GetKeyName("最终涨停时间")] != nil {
+		p.Shijian = row[GetKeyName("最终涨停时间")].(string)
 	}
 }
 
