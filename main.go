@@ -14,8 +14,9 @@ func main() {
 	//core.TestDataRaceByAtomic()
 	//core.ReqStr()
 	//core.TestForIota()
-	//core.DoPP()
+	core.DoPP()
 	//core.StartServ()
 	//core.UseExcel()
-	core.StartReqStrServ()
+	//data_race.DoRace()
+	//core.StartReqStrServ()
 }
