@@ -8,14 +8,14 @@ import (
 )
 
 func GenerateSql(rawFileName string, targetFileName string) {
-	tableName := "openplatform_item_upload"
-
 	bytes, err := os.ReadFile(rawFileName)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	result := gjson.Parse(string(bytes))
+	sql := result.Get("data.0.data.0.sql")
+	tableName := strings.Split(sql.Str, " ")[3]
 	columnsResult := result.Get("data.0.data.0.columns")
 	rowsResult := result.Get("data.0.data.0.rows")
 	fmt.Println(columnsResult)
@@ -62,4 +62,5 @@ func GenerateSql(rawFileName string, targetFileName string) {
 	defer file.Close()
 	finalDataString := strings.Join(sqls, "\n")
 	file.Write([]byte(finalDataString))
+	fmt.Println("success~~~~")
 }
