@@ -2,7 +2,6 @@ package core
 
 import (
 	"github.com/lwcbest/gotool/que_str"
-	"github.com/lwcbest/gotool/usejs"
 	"log"
 	"net/http"
 )
@@ -25,13 +24,23 @@ func (server2 httpServer2) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(resp))
 }
 
+type httpServer3 struct {
+}
+
+func (server3 httpServer3) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	resp := que_str.AnalysisStr()
+	w.Write([]byte(resp))
+}
+
 func StartReqStrServ() {
-	usejs.UseJs()
 	var server httpServer
 	var server2 httpServer2
+	var server3 httpServer3
 	http.Handle("/mohe", server)
 	http.Handle("/mohe_save", server2)
+	http.Handle("/mohe_analysis", server3)
 	log.Println("http://localhost:8123/mohe")
 	log.Println("http://localhost:8123/mohe_save")
+	log.Println("http://localhost:8123/mohe_analysis")
 	log.Fatal(http.ListenAndServe(":8123", nil))
 }

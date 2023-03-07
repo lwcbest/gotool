@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/lwcbest/gotool/core"
-)
+import "github.com/lwcbest/gotool/core"
 
 func main() {
 	//core.TestDelMap()
@@ -14,9 +12,14 @@ func main() {
 	//core.TestDataRaceByAtomic()
 	//core.ReqStr()
 	//core.TestForIota()
-	core.DoPP()
+
 	//core.StartServ()
 	//core.UseExcel()
 	//data_race.DoRace()
 	//core.StartReqStrServ()
+
+	//GenerateSql
+	rawFileName := "/Users/xxx/book/test/rawData.txt"
+	targetFileName := "/Users/xxx/book/test/sqlResult.txt"
+	core.GenerateSql(rawFileName, targetFileName)
 }
