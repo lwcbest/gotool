@@ -2,10 +2,17 @@ package core
 
 import (
 	"fmt"
-	"github.com/tidwall/gjson"
 	"os"
 	"strings"
+
+	"github.com/tidwall/gjson"
 )
+
+func DoGenSql() {
+	rawFileName := "/Users/xxx/book/test/rawData.txt"
+	targetFileName := "/Users/xxx/book/test/sqlResult.txt"
+	GenerateSql(rawFileName, targetFileName)
+}
 
 func GenerateSql(rawFileName string, targetFileName string) {
 	bytes, err := os.ReadFile(rawFileName)

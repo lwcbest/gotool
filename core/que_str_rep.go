@@ -1,9 +1,10 @@
 package core
 
 import (
-	"github.com/lwcbest/gotool/que_str"
 	"log"
 	"net/http"
+
+	"github.com/lwcbest/gotool/que_str"
 )
 
 type httpServer struct {
@@ -28,7 +29,7 @@ type httpServer3 struct {
 }
 
 func (server3 httpServer3) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	resp := que_str.AnalysisStr()
+	resp := que_str.SaveReqStr()
 	w.Write([]byte(resp))
 }
 
