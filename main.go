@@ -21,6 +21,9 @@ func main() {
 		core.DoGenSql()
 	case "4":
 		core.DoImage()
+	case "run_redis":
+		fmt.Println("run_redis_start")
+		core.RunK888S()
 	default:
 		fmt.Println("abc")
 	}
