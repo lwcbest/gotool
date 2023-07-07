@@ -29,6 +29,17 @@ func (m *K8SManager) Init() {
 }
 
 func (m *K8SManager) StartRedis() {
+	m.DelRedis()
+
+	redisSvc := &RedisSVC{}
+	redisSvc.InitMetaData()
+	fmt.Println("***| restart target resource |***")
+	m.startConfig(redisSvc.ConfigMap)
+	m.startSvc(redisSvc.Service)
+	m.startDeploy(redisSvc.Deployment)
+}
+
+func (m *K8SManager) DelRedis() {
 	redisSvc := &RedisSVC{}
 	redisSvc.InitMetaData()
 
@@ -41,11 +52,6 @@ func (m *K8SManager) StartRedis() {
 	m.delSvc(redisSvc.Name, services)
 	m.delDeploy(redisSvc.Name, dms)
 	m.delConfig(redisSvc.Name+"-config", configs)
-
-	fmt.Println("***| restart target resource |***")
-	m.startConfig(redisSvc.ConfigMap)
-	m.startSvc(redisSvc.Service)
-	m.startDeploy(redisSvc.Deployment)
 }
 
 func (m *K8SManager) initLocalConfig() {

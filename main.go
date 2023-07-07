@@ -23,7 +23,10 @@ func main() {
 		core.DoImage()
 	case "run_redis":
 		fmt.Println("run_redis_start")
-		core.RunK888S()
+		core.RunRedisInK8s()
+	case "del_redis":
+		fmt.Println("del_redis_start")
+		core.DelRedisInK8s()
 	default:
 		fmt.Println("abc")
 	}

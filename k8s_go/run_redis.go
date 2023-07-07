@@ -5,3 +5,9 @@ func RunRedisDocker() {
 	k8sManager.Init()
 	k8sManager.StartRedis()
 }
+
+func DelRedisDocker() {
+	k8sManager := &K8SManager{}
+	k8sManager.Init()
+	k8sManager.DelRedis()
+}
