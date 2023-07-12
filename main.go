@@ -23,10 +23,16 @@ func main() {
 		core.DoImage()
 	case "run_redis":
 		fmt.Println("run_redis_start")
-		core.RunRedisInK8s()
+		core.RunInK8s(1)
 	case "del_redis":
 		fmt.Println("del_redis_start")
-		core.DelRedisInK8s()
+		core.RunInK8s(2)
+	case "run_mysql":
+		fmt.Println("run_mysql_start")
+		core.RunInK8s(3)
+	case "del_mysql":
+		fmt.Println("del_mysql_start")
+		core.RunInK8s(4)
 	default:
 		fmt.Println("abc")
 	}

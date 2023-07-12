@@ -1,4 +1,4 @@
-package k8s_go
+package mysql_k8s
 
 import (
 	"github.com/lwcbest/gotool/utils"
@@ -8,83 +8,98 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-type RedisSVC struct {
-	Name       string
-	Service    *corev1.Service
-	Deployment *appsv1.Deployment
-	ConfigMap  *corev1.ConfigMap
+type MysqlSVC struct {
+	name       string
+	service    *corev1.Service
+	deployment *appsv1.Deployment
+	configMap  *corev1.ConfigMap
 }
 
-func (redisSvc *RedisSVC) InitMetaData() {
-	redisSvc.Name = "redis"
-	redisSvc.createService()
-	redisSvc.createDeploy()
-	redisSvc.createConfigMap()
+func (svc *MysqlSVC) InitMetaData() {
+	svc.name = "mysql"
+	svc.createService()
+	svc.createDeploy()
+	svc.createConfigMap()
 }
 
-func (redisSvc *RedisSVC) createService() {
+func (svc *MysqlSVC) GetName() string {
+	return svc.name
+}
+
+func (svc *MysqlSVC) GetServiceMeta() *corev1.Service {
+	return svc.service
+}
+
+func (svc *MysqlSVC) GetDeploymentMeta() *appsv1.Deployment {
+	return svc.deployment
+}
+
+func (svc *MysqlSVC) GetConfigMapMeta() *corev1.ConfigMap {
+	return svc.configMap
+}
+
+func (svc *MysqlSVC) createService() {
 	// 创建Redis服务的定义
-	redisService := &corev1.Service{
+	k8sSvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: redisSvc.Name,
+			Name: svc.name,
 		},
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeNodePort,
 			Selector: map[string]string{
-				"app": "redis",
+				"app": "mysql",
 			},
 			Ports: []corev1.ServicePort{
 				{
-					Name:       "redis",
-					Port:       6379,
-					TargetPort: intstr.FromInt(6379),
-					NodePort:   30379,
+					Name:       "mysql",
+					Port:       3306,
+					TargetPort: intstr.FromInt(3306),
+					NodePort:   30306,
 				},
 			},
 		},
 	}
 
-	redisSvc.Service = redisService
+	svc.service = k8sSvc
 }
 
-func (redisSvc *RedisSVC) createDeploy() {
+func (svc *MysqlSVC) createDeploy() {
 	// 创建Redis部署的定义
-	redisDeployment := &appsv1.Deployment{
+	k8sDeployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: redisSvc.Name,
+			Name: svc.name,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Replicas: utils.Int32Ptr(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "redis",
+					"app": "mysql",
 				},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "redis",
+						"app": "mysql",
 					},
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name:  "redis",
-							Image: "redis:latest",
+							Name:  "mysql",
+							Image: "mysql:latest",
 							Ports: []corev1.ContainerPort{
 								{
-									Name:          "redis",
-									ContainerPort: 6379,
+									Name:          "mysql",
+									ContainerPort: 3306,
 								},
 							},
-							Args: []string{"--requirepass", "$(REDIS_PASSWORD)"},
 							Env: []corev1.EnvVar{
 								{
-									Name: "REDIS_PASSWORD",
+									Name: "MYSQL_ROOT_PASSWORD",
 									ValueFrom: &corev1.EnvVarSource{
 										ConfigMapKeyRef: &corev1.ConfigMapKeySelector{
 											LocalObjectReference: corev1.LocalObjectReference{
-												Name: "redis-config",
+												Name: "mysql-config",
 											},
 											Key: "password",
 										},
@@ -98,19 +113,19 @@ func (redisSvc *RedisSVC) createDeploy() {
 		},
 	}
 
-	redisSvc.Deployment = redisDeployment
+	svc.deployment = k8sDeployment
 }
 
-func (redisSvc *RedisSVC) createConfigMap() {
+func (svc *MysqlSVC) createConfigMap() {
 	// 创建 Redis 密码的 ConfigMap 对象
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: redisSvc.Name + "-config",
+			Name: svc.name + "-config",
 		},
 		Data: map[string]string{
 			"password": "cool123456",
 		},
 	}
 
-	redisSvc.ConfigMap = configMap
+	svc.configMap = configMap
 }

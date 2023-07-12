@@ -20,38 +20,35 @@ type K8SManager struct {
 	namespace string
 	k8sClient *kubernetes.Clientset
 	k8sConfig *restclient.Config
+	svc       ISvc
 }
 
-func (m *K8SManager) Init() {
+func (m *K8SManager) Init(svc ISvc) {
 	m.namespace = "default"
 	m.initLocalConfig()
 	m.initK8SClient()
+	m.svc = svc
 }
 
-func (m *K8SManager) StartRedis() {
-	m.DelRedis()
-
-	redisSvc := &RedisSVC{}
-	redisSvc.InitMetaData()
-	fmt.Println("***| restart target resource |***")
-	m.startConfig(redisSvc.ConfigMap)
-	m.startSvc(redisSvc.Service)
-	m.startDeploy(redisSvc.Deployment)
-}
-
-func (m *K8SManager) DelRedis() {
-	redisSvc := &RedisSVC{}
-	redisSvc.InitMetaData()
-
+func (m *K8SManager) StopSvc() {
+	m.svc.InitMetaData()
 	fmt.Println("***| start get resource |***")
 	services := m.getCurrentSvc()
 	dms := m.getCurrentDeployment()
 	configs := m.getCurrentConfigMap()
 
 	fmt.Println("***| start del resource |***")
-	m.delSvc(redisSvc.Name, services)
-	m.delDeploy(redisSvc.Name, dms)
-	m.delConfig(redisSvc.Name+"-config", configs)
+	m.delSvc(m.svc.GetName(), services)
+	m.delDeploy(m.svc.GetName(), dms)
+	m.delConfig(m.svc.GetName()+"-config", configs)
+}
+
+func (m *K8SManager) StartSvc() {
+	m.StopSvc()
+	fmt.Println("***| start create resource |***")
+	m.startConfig(m.svc.GetConfigMapMeta())
+	m.startSvc(m.svc.GetServiceMeta())
+	m.startDeploy(m.svc.GetDeploymentMeta())
 }
 
 func (m *K8SManager) initLocalConfig() {
